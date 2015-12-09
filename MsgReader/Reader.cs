@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Web;
+using MsgReader.Entities;
 using MsgReader.Exceptions;
 using MsgReader.Helpers;
 using MsgReader.Localization;
@@ -154,6 +155,60 @@ namespace MsgReader
         #endregion
 
         #region ExtractToFolder
+
+        public MessageBag CreateMessageBag(string inputFile, DirectoryInfo target)
+        {
+            MessageBag result;
+            using (var stream = File.Open(inputFile, FileMode.Open, FileAccess.Read))
+            using (var message = new Storage.Message(stream))
+            {
+                switch (message.Type)
+                {
+                    case Storage.Message.MessageType.Email:
+                    case Storage.Message.MessageType.EmailSms:
+                    case Storage.Message.MessageType.EmailNonDeliveryReport:
+                    case Storage.Message.MessageType.EmailDeliveryReport:
+                    case Storage.Message.MessageType.EmailDelayedDeliveryReport:
+                    case Storage.Message.MessageType.EmailReadReceipt:
+                    case Storage.Message.MessageType.EmailNonReadReceipt:
+                    case Storage.Message.MessageType.EmailEncryptedAndMeabySigned:
+                    case Storage.Message.MessageType.EmailEncryptedAndMeabySignedNonDelivery:
+                    case Storage.Message.MessageType.EmailEncryptedAndMeabySignedDelivery:
+                    case Storage.Message.MessageType.EmailClearSignedReadReceipt:
+                    case Storage.Message.MessageType.EmailClearSignedNonDelivery:
+                    case Storage.Message.MessageType.EmailClearSignedDelivery:
+                    case Storage.Message.MessageType.EmailBmaStub:
+                        var fileName = "email";
+                        bool htmlBody;
+                        string body;
+                        string dummy;
+                        List<string> attachmentList;
+                        List<string> files;
+
+                        PreProcessMsgFile(message,
+                            false,
+                            target.FullName,
+                            ref fileName,
+                            out htmlBody,
+                            out body,
+                            out dummy,
+                            out attachmentList,
+                            out files);
+                        result = MessageBag.Create(message);
+                        break;
+
+                    case Storage.Message.MessageType.EmailClearSigned:
+                        throw new MRFileTypeNotSupported("A clear signed message is not supported");
+
+                    default:
+                        result = null;
+                        break;
+                }
+            }
+
+            return result;
+        }
+
         /// <summary>
         /// This method reads the <paramref name="inputFile"/> and when the file is supported it will do the following: <br/>
         /// - Extract the HTML, RTF (will be converted to html) or TEXT body (in these order) <br/>
@@ -166,9 +221,9 @@ namespace MsgReader
         /// <param name="outputFolder">The folder where to save the extracted msg file</param>
         /// <param name="hyperlinks">When true hyperlinks are generated for the To, CC, BCC and attachments</param>
         /// <param name="culture"></param>
-        public string[] ExtractToFolderFromCom(string inputFile, 
-                                               string outputFolder, 
-                                               bool hyperlinks = false, 
+        public string[] ExtractToFolderFromCom(string inputFile,
+                                               string outputFolder,
+                                               bool hyperlinks = false,
                                                string culture = "")
         {
             try
@@ -206,7 +261,7 @@ namespace MsgReader
         public string[] ExtractToFolder(string inputFile, string outputFolder, bool hyperlinks = false)
         {
             outputFolder = FileManager.CheckForBackSlash(outputFolder);
-            
+
             _errorMessage = string.Empty;
 
             var extension = CheckFileNameAndOutputFolder(inputFile, outputFolder);
@@ -267,7 +322,7 @@ namespace MsgReader
                             case Storage.Message.MessageType.TaskRequestDecline:
                             case Storage.Message.MessageType.TaskRequestUpdate:
                                 return WriteMsgTask(message, outputFolder, hyperlinks).ToArray();
-                                
+
                             case Storage.Message.MessageType.StickyNote:
                                 return WriteMsgStickyNote(message, outputFolder).ToArray();
 
@@ -475,9 +530,9 @@ namespace MsgReader
                 if (message.Type == Storage.Message.MessageType.EmailEncryptedAndMeabySigned)
                     languageConsts.Add(LanguageConsts.EmailSignedBy);
 
-                maxLength = languageConsts.Select(languageConst => languageConst.Length).Concat(new[] {0}).Max() + 2;
+                maxLength = languageConsts.Select(languageConst => languageConst.Length).Concat(new[] { 0 }).Max() + 2;
             }
-            
+
             var emailHeader = new StringBuilder();
 
             // Start of table
@@ -543,7 +598,7 @@ namespace MsgReader
                     message.Flag.Request);
 
                 // When complete
-                if (message.Task.Complete != null && (bool) message.Task.Complete)
+                if (message.Task.Complete != null && (bool)message.Task.Complete)
                 {
                     WriteHeaderLine(emailHeader, htmlBody, maxLength, LanguageConsts.EmailFollowUpStatusLabel,
                         LanguageConsts.EmailFollowUpCompletedText);
@@ -551,19 +606,19 @@ namespace MsgReader
                     // Task completed date
                     if (message.Task.CompleteTime != null)
                         WriteHeaderLine(emailHeader, htmlBody, maxLength, LanguageConsts.TaskDateCompleted,
-                            ((DateTime) message.Task.CompleteTime).ToString(LanguageConsts.DataFormatWithTime));
+                            ((DateTime)message.Task.CompleteTime).ToString(LanguageConsts.DataFormatWithTime));
                 }
                 else
                 {
                     // Task startdate
                     if (message.Task.StartDate != null)
                         WriteHeaderLine(emailHeader, htmlBody, maxLength, LanguageConsts.TaskStartDateLabel,
-                            ((DateTime) message.Task.StartDate).ToString(LanguageConsts.DataFormatWithTime));
+                            ((DateTime)message.Task.StartDate).ToString(LanguageConsts.DataFormatWithTime));
 
                     // Task duedate
                     if (message.Task.DueDate != null)
                         WriteHeaderLine(emailHeader, htmlBody, maxLength, LanguageConsts.TaskDueDateLabel,
-                            ((DateTime) message.Task.DueDate).ToString(LanguageConsts.DataFormatWithTime));
+                            ((DateTime)message.Task.DueDate).ToString(LanguageConsts.DataFormatWithTime));
                 }
 
                 // Empty line
@@ -782,7 +837,7 @@ namespace MsgReader
                     #endregion
                 };
 
-                maxLength = languageConsts.Select(languageConst => languageConst.Length).Concat(new[] {0}).Max() + 2;
+                maxLength = languageConsts.Select(languageConst => languageConst.Length).Concat(new[] { 0 }).Max() + 2;
             }
 
             var appointmentHeader = new StringBuilder();
@@ -804,13 +859,13 @@ namespace MsgReader
             // Start
             if (message.Appointment.Start != null)
                 WriteHeaderLine(appointmentHeader, htmlBody, maxLength, LanguageConsts.AppointmentStartDateLabel,
-                    ((DateTime) message.Appointment.Start).ToString(LanguageConsts.DataFormatWithTime));
+                    ((DateTime)message.Appointment.Start).ToString(LanguageConsts.DataFormatWithTime));
 
             // End
             if (message.Appointment.End != null)
                 WriteHeaderLine(appointmentHeader, htmlBody, maxLength,
                     LanguageConsts.AppointmentEndDateLabel,
-                    ((DateTime) message.Appointment.End).ToString(LanguageConsts.DataFormatWithTime));
+                    ((DateTime)message.Appointment.End).ToString(LanguageConsts.DataFormatWithTime));
 
             // Empty line
             WriteHeaderEmptyLine(appointmentHeader, htmlBody);
@@ -924,7 +979,7 @@ namespace MsgReader
                 out dummy,
                 out attachmentList,
                 out files);
-            
+
             var maxLength = 0;
 
             // Calculate padding width when we are going to write a text file
@@ -950,7 +1005,7 @@ namespace MsgReader
                     #endregion
                 };
 
-                maxLength = languageConsts.Select(languageConst => languageConst.Length).Concat(new[] {0}).Max() + 2;
+                maxLength = languageConsts.Select(languageConst => languageConst.Length).Concat(new[] { 0 }).Max() + 2;
             }
 
             var taskHeader = new StringBuilder();
@@ -965,13 +1020,13 @@ namespace MsgReader
             if (message.Task.StartDate != null)
                 WriteHeaderLine(taskHeader, htmlBody, maxLength,
                     LanguageConsts.TaskStartDateLabel,
-                    ((DateTime) message.Task.StartDate).ToString(LanguageConsts.DataFormatWithTime));
+                    ((DateTime)message.Task.StartDate).ToString(LanguageConsts.DataFormatWithTime));
 
             // Task duedate
             if (message.Task.DueDate != null)
                 WriteHeaderLine(taskHeader, htmlBody, maxLength,
                     LanguageConsts.TaskDueDateLabel,
-                    ((DateTime) message.Task.DueDate).ToString(LanguageConsts.DataFormatWithTime));
+                    ((DateTime)message.Task.DueDate).ToString(LanguageConsts.DataFormatWithTime));
 
             // Urgent
             var importance = message.ImportanceText;
@@ -993,7 +1048,7 @@ namespace MsgReader
             // Percentage complete
             if (message.Task.PercentageComplete != null)
                 WriteHeaderLine(taskHeader, htmlBody, maxLength, LanguageConsts.TaskPercentageCompleteLabel,
-                    (message.Task.PercentageComplete*100) + "%");
+                    (message.Task.PercentageComplete * 100) + "%");
 
             // Empty line
             WriteHeaderEmptyLine(taskHeader, htmlBody);
@@ -1150,11 +1205,11 @@ namespace MsgReader
                 };
                 #endregion
 
-                maxLength = languageConsts.Select(languageConst => languageConst.Length).Concat(new[] {0}).Max() + 2;
+                maxLength = languageConsts.Select(languageConst => languageConst.Length).Concat(new[] { 0 }).Max() + 2;
             }
 
             var contactHeader = new StringBuilder();
-            
+
             // Start of table
             WriteHeaderStart(contactHeader, htmlBody);
 
@@ -1196,12 +1251,12 @@ namespace MsgReader
             if (!string.IsNullOrEmpty(message.Contact.WorkAddress))
                 WriteHeaderLine(contactHeader, htmlBody, maxLength, LanguageConsts.WorkAddressLabel,
                     message.Contact.WorkAddress);
-            
+
             // Home address
             if (!string.IsNullOrEmpty(message.Contact.HomeAddress))
                 WriteHeaderLine(contactHeader, htmlBody, maxLength, LanguageConsts.HomeAddressLabel,
                     message.Contact.HomeAddress);
-            
+
             // Other address
             if (!string.IsNullOrEmpty(message.Contact.OtherAddress))
                 WriteHeaderLine(contactHeader, htmlBody, maxLength, LanguageConsts.OtherAddressLabel,
@@ -1239,7 +1294,7 @@ namespace MsgReader
             if (!string.IsNullOrEmpty(message.Contact.HomeTelephoneNumber))
                 WriteHeaderLine(contactHeader, htmlBody, maxLength, LanguageConsts.HomeTelephoneNumberLabel,
                     message.Contact.HomeTelephoneNumber);
-            
+
             // Home telephone number 2
             if (!string.IsNullOrEmpty(message.Contact.HomeTelephoneNumber2))
                 WriteHeaderLine(contactHeader, htmlBody, maxLength, LanguageConsts.HomeTelephoneNumber2Label,
@@ -1377,7 +1432,7 @@ namespace MsgReader
 
             // Empty line
             WriteHeaderEmptyLine(contactHeader, htmlBody);
-            
+
             // Categories
             var categories = message.Categories;
             if (categories != null)
@@ -1388,7 +1443,7 @@ namespace MsgReader
             WriteHeaderEmptyLine(contactHeader, htmlBody);
 
             WriteHeaderEnd(contactHeader, htmlBody);
-            
+
             body = InjectHeader(body, contactHeader.ToString());
 
             // Write the body to a file
@@ -1776,7 +1831,7 @@ namespace MsgReader
             return _errorMessage;
         }
         #endregion
-        
+
         #region InjectHeader
         /// <summary>
         /// Inject an Outlook style header into the top of the html
