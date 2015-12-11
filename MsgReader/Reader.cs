@@ -195,6 +195,7 @@ namespace MsgReader
                             out attachmentList,
                             out files);
                         result = MessageBag.Create(message);
+                        result.PreviewBody = body;
                         break;
 
                     case Storage.Message.MessageType.EmailClearSigned:
@@ -1610,10 +1611,10 @@ namespace MsgReader
                 }
             }
 
-            fileName = outputFolder +
+            fileName = Path.Combine(outputFolder,
                        (!string.IsNullOrEmpty(message.Subject)
                            ? FileManager.RemoveInvalidFileNameChars(message.Subject)
-                           : fileName) + (htmlBody ? ".htm" : ".txt");
+                           : fileName) + (htmlBody ? ".htm" : ".txt"));
 
             fileName = FileManager.FileExistsMakeNew(fileName);
             files.Add(fileName);
@@ -1633,7 +1634,7 @@ namespace MsgReader
                     var attach = (Storage.Attachment)attachment;
                     attachmentFileName = attach.FileName;
                     renderingPosition = attach.RenderingPosition;
-                    fileInfo = new FileInfo(FileManager.FileExistsMakeNew(outputFolder + attachmentFileName));
+                    fileInfo = new FileInfo(FileManager.FileExistsMakeNew(Path.Combine(outputFolder, attachmentFileName)));
                     File.WriteAllBytes(fileInfo.FullName, attach.Data);
                     isInline = attach.IsInline;
 

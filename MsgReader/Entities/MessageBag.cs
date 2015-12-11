@@ -34,8 +34,11 @@ namespace MsgReader.Entities
 
         public string ModifiedBy { get; private set; }
 
+        public string PreviewBody { get; set; }
+
         public DateTime? Received { get; private set; }
 
+        public ReceivedByBag ReceivedBy { get; private set; }
         public List<RecipientBag> Recipients { get; private set; }
 
         public string RtfBody { get; private set; }
@@ -50,8 +53,7 @@ namespace MsgReader.Entities
 
         public string Subject { get; private set; }
 
-        public ReceivedByBag ReceivedBy { get; private set; } //receivedby
-
+        //receivedby
         internal static MessageBag Create(MSG.Message msg)
         {
             var result = new MessageBag();
