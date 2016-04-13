@@ -4,6 +4,7 @@ using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Mail;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -18,7 +19,7 @@ using MsgReader.Outlook;
 // ReSharper disable FunctionComplexityOverflow
 
 /*
-   Copyright 2013-2015 Kees van Spelde
+   Copyright 2013-2016 Kees van Spelde
 
    Licensed under The Code Project Open License (CPOL) 1.02;
    you may not use this file except in compliance with the License.
@@ -289,17 +290,19 @@ namespace MsgReader
                             case Storage.Message.MessageType.EmailDelayedDeliveryReport:
                             case Storage.Message.MessageType.EmailReadReceipt:
                             case Storage.Message.MessageType.EmailNonReadReceipt:
-                            case Storage.Message.MessageType.EmailEncryptedAndMeabySigned:
-                            case Storage.Message.MessageType.EmailEncryptedAndMeabySignedNonDelivery:
-                            case Storage.Message.MessageType.EmailEncryptedAndMeabySignedDelivery:
+                            case Storage.Message.MessageType.EmailEncryptedAndMaybeSigned:
+                            case Storage.Message.MessageType.EmailEncryptedAndMaybeSignedNonDelivery:
+                            case Storage.Message.MessageType.EmailEncryptedAndMaybeSignedDelivery:
                             case Storage.Message.MessageType.EmailClearSignedReadReceipt:
                             case Storage.Message.MessageType.EmailClearSignedNonDelivery:
                             case Storage.Message.MessageType.EmailClearSignedDelivery:
                             case Storage.Message.MessageType.EmailBmaStub:
+                            case Storage.Message.MessageType.CiscoUnityVoiceMessage:
+                            case Storage.Message.MessageType.EmailClearSigned:
                                 return WriteMsgEmail(message, outputFolder, hyperlinks).ToArray();
 
-                            case Storage.Message.MessageType.EmailClearSigned:
-                                throw new MRFileTypeNotSupported("A clear signed message is not supported");
+                            //case Storage.Message.MessageType.EmailClearSigned:
+                            //    throw new MRFileTypeNotSupported("A clear signed message is not supported");
 
                             case Storage.Message.MessageType.Appointment:
                             case Storage.Message.MessageType.AppointmentNotification:
@@ -394,11 +397,11 @@ namespace MsgReader
                 var newText = string.Empty;
 
                 foreach (var line in lines)
-                    newText += HttpUtility.HtmlEncode(line) + "<br/>";
+                    newText += WebUtility.HtmlEncode(line) + "<br/>";
 
                 header.AppendLine(
                     "<tr style=\"height: 18px; vertical-align: top; \"><td style=\"font-weight: bold; white-space:nowrap;\">" +
-                    HttpUtility.HtmlEncode(label) + ":</td><td>" + newText + "</td></tr>");
+                     WebUtility.HtmlEncode(label) + ":</td><td>" + newText + "</td></tr>");
             }
             else
             {
@@ -429,7 +432,7 @@ namespace MsgReader
 
                 header.AppendLine(
                     "<tr style=\"height: 18px; vertical-align: top; \"><td style=\"font-weight: bold; white-space:nowrap; \">" +
-                    HttpUtility.HtmlEncode(label) + ":</td><td>" + text + "</td></tr>");
+                    WebUtility.HtmlEncode(label) + ":</td><td>" + text + "</td></tr>");
             }
             else
             {
@@ -528,7 +531,8 @@ namespace MsgReader
                     #endregion
                 };
 
-                if (message.Type == Storage.Message.MessageType.EmailEncryptedAndMeabySigned)
+                if (message.Type == Storage.Message.MessageType.EmailEncryptedAndMaybeSigned ||
+                    message.Type == Storage.Message.MessageType.EmailClearSigned)
                     languageConsts.Add(LanguageConsts.EmailSignedBy);
 
                 maxLength = languageConsts.Select(languageConst => languageConst.Length).Concat(new[] { 0 }).Max() + 2;
@@ -562,7 +566,8 @@ namespace MsgReader
             if (!string.IsNullOrEmpty(bcc))
                 WriteHeaderLineNoEncoding(emailHeader, htmlBody, maxLength, LanguageConsts.EmailBccLabel, bcc);
 
-            if (message.Type == Storage.Message.MessageType.EmailEncryptedAndMeabySigned)
+            if (message.Type == Storage.Message.MessageType.EmailEncryptedAndMaybeSigned ||
+                message.Type == Storage.Message.MessageType.EmailClearSigned)
             {
                 var signerInfo = message.SignedBy;
                 if (message.SignedOn != null)
@@ -1521,29 +1526,6 @@ namespace MsgReader
         #endregion
 
         #region PreProcessMsgFile
-        private class InlineAttachment
-        {
-            public int? RenderingPosition { get; private set; }
-            public string IconFileName { get; private set; }
-            public string AttachmentFileName { get; private set; }
-            public string FullName { get; private set; }
-            public InlineAttachment(int renderingPosition,
-                                    string attachmentFileName)
-            {
-                RenderingPosition = renderingPosition;
-                AttachmentFileName = attachmentFileName;
-            }
-
-            public InlineAttachment(string iconFileName,
-                                    string attachmentFileName,
-                                    string fullName)
-            {
-                IconFileName = iconFileName;
-                AttachmentFileName = attachmentFileName;
-                FullName = fullName;
-            }
-        }
-
         /// <summary>
         /// This function pre processes the Outlook MSG <see cref="Storage.Message"/> object, it tries to find the html (or text) body
         /// and reads all the available <see cref="Storage.Attachment"/> objects. When an attachment is inline it tries to
@@ -1696,10 +1678,10 @@ namespace MsgReader
                     {
                         if (hyperlinks)
                             attachments.Add("<a href=\"" + fileInfo.Name + "\">" +
-                                            HttpUtility.HtmlEncode(attachmentFileName) + "</a> (" +
+                                            WebUtility.HtmlEncode(attachmentFileName) + "</a> (" +
                                             FileManager.GetFileSizeString(fileInfo.Length) + ")");
                         else
-                            attachments.Add(HttpUtility.HtmlEncode(attachmentFileName) + " (" +
+                            attachments.Add(WebUtility.HtmlEncode(attachmentFileName) + " (" +
                                             FileManager.GetFileSizeString(fileInfo.Length) + ")");
                     }
                     else
@@ -1710,15 +1692,15 @@ namespace MsgReader
             if (htmlBody)
                 foreach (var inlineAttachment in inlineAttachments.OrderBy(m => m.RenderingPosition))
                 {
-                    if (inlineAttachment.RenderingPosition != null)
+                    if (inlineAttachment.IconFileName != null)
                         body = ReplaceFirstOccurence(body, rtfInlineObject,
                             "<table style=\"width: 70px; display: inline; text-align: center; font-family: Times New Roman; font-size: 12pt;\"><tr><td>" +
                             (hyperlinks ? "<a href=\"" + inlineAttachment.FullName + "\">" : string.Empty) + "<img alt=\"\" src=\"" +
-                            inlineAttachment.RenderingPosition + "\">" + (hyperlinks ? "</a>" : string.Empty) + "</td></tr><tr><td>" +
-                            HttpUtility.HtmlEncode(inlineAttachment.AttachmentFileName) +
+                            inlineAttachment.IconFileName + "\">" + (hyperlinks ? "</a>" : string.Empty) + "</td></tr><tr><td>" +
+                            WebUtility.HtmlEncode(inlineAttachment.AttachmentFileName) +
                             "</td></tr></table>");
                     else
-                        body = ReplaceFirstOccurence(body, rtfInlineObject, "<img alt=\"\" src=\"" + inlineAttachment.IconFileName + "\">");
+                        body = ReplaceFirstOccurence(body, rtfInlineObject, "<img alt=\"\" src=\"" + inlineAttachment.FullName + "\">");
                 }
         }
         #endregion
@@ -1808,10 +1790,10 @@ namespace MsgReader
                         {
                             if (hyperlinks)
                                 attachments.Add("<a href=\"" + fileInfo.Name + "\">" +
-                                                HttpUtility.HtmlEncode(attachmentFileName) + "</a> (" +
+                                                WebUtility.HtmlEncode(attachmentFileName) + "</a> (" +
                                                 FileManager.GetFileSizeString(fileInfo.Length) + ")");
                             else
-                                attachments.Add(HttpUtility.HtmlEncode(attachmentFileName) + " (" +
+                                attachments.Add(WebUtility.HtmlEncode(attachmentFileName) + " (" +
                                                 FileManager.GetFileSizeString(fileInfo.Length) + ")");
                         }
                         else

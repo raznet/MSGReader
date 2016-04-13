@@ -2,13 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Net;
 using System.Net.Mime;
 using System.Web;
 using MsgReader.Mime.Header;
 using MsgReader.Mime.Traverse;
 
 /*
-   Copyright 2013-2015 Kees van Spelde
+   Copyright 2013-2016 Kees van Spelde
 
    Licensed under The Code Project Open License (CPOL) 1.02;
    you may not use this file except in compliance with the License.
@@ -187,8 +188,8 @@ namespace MsgReader.Mime
 
                 if (html)
                 {
-                    emailAddress = HttpUtility.HtmlEncode(emailAddress);
-                    displayName = HttpUtility.HtmlEncode(displayName);
+                    emailAddress = WebUtility.HtmlEncode(emailAddress);
+                    displayName = WebUtility.HtmlEncode(displayName);
                 }
 
                 if (convertToHref && html && !string.IsNullOrEmpty(emailAddress))
