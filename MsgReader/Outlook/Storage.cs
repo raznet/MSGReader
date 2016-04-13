@@ -223,8 +223,8 @@ namespace MsgReader.Outlook
         protected virtual void LoadStorage(NativeMethods.IStorage storage)
         {
             if (storage == null)
-                throw new ArgumentNullException("storage", "Storage can not be null"); 
-            
+                throw new ArgumentNullException("storage", "Storage can not be null");
+
             _storage = storage;
 
             // Ensures memory is released
@@ -396,8 +396,8 @@ namespace MsgReader.Outlook
                     return null;
 
                 case MapiTags.PT_STRING8:
-                    //return GetStreamAsString(containerName, Encoding.UTF8);
-                    return GetStreamAsString(containerName, Encoding.Default);
+                    return GetStreamAsString(containerName, Encoding.UTF8);
+                //return GetStreamAsString(containerName, Encoding.Default);
 
                 case MapiTags.PT_UNICODE:
                     return GetStreamAsString(containerName, Encoding.Unicode);
@@ -485,8 +485,8 @@ namespace MsgReader.Outlook
                     case MapiTags.PT_BOOLEAN:
                         return BitConverter.ToBoolean(propBytes, i + 8);
 
-                    //default:
-                    //throw new ApplicationException("MAPI property has an unsupported type and can not be retrieved.");
+                        //default:
+                        //throw new ApplicationException("MAPI property has an unsupported type and can not be retrieved.");
                 }
             }
 
