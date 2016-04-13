@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title>Msgreader by Sicos1977</title>
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1>Msgreader</h1>
+        <h2>C# Outlook MSG file reader without the need for Outlook</h2>
+        <a href="https://github.com/Sicos1977/MSGReader" class="button"><small>View project on</small> GitHub</a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          <h1>
+<a id="what-is-msgreader" class="anchor" href="#what-is-msgreader" aria-hidden="true"><span class="octicon octicon-link"></span></a>What is MSGReader</h1>
+
+<p>MSGReader is a C# .NET 4.0 library to read Outlook MSG and EML (Mime 1.0) files. Almost all common object in Outlook are supported:</p>
+
+<ul>
+<li>E-mail</li>
+<li>Appointment</li>
+<li>Task</li>
+<li>Contact card</li>
+<li>Sticky note</li>
+</ul>
+
+<p>It supports all body types there are in MSG files, this includes:</p>
+
+<ul>
+<li>Text</li>
+<li>HTML</li>
+<li>HTML embedded into RTF</li>
+<li>RTF</li>
+</ul>
+
+<p>MSGReader has only a few options to manipulate an MSG file. The only option you have is that you can remove attachments and then save the file to a new one.</p>
+
+<h1>
+<a id="translations" class="anchor" href="#translations" aria-hidden="true"><span class="octicon octicon-link"></span></a>Translations</h1>
+
+<ul>
+<li>
+<p>Kees van Spelde</p>
+
+<ul>
+<li>English (US)</li>
+<li>Dutch</li>
+</ul>
+</li>
+<li>
+<p>Ronald Kohl</p>
+
+<ul>
+<li>German</li>
+</ul>
+</li>
+<li>
+<p>Yan Grenier (<a href="https://github.com/ygrenier" class="user-mention">@ygrenier</a> on GitHub)</p>
+
+<ul>
+<li>French</li>
+</ul>
+</li>
+</ul>
+
+<h1>
+<a id="installing-via-nuget" class="anchor" href="#installing-via-nuget" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installing via NuGet</h1>
+
+<p>The easiest way to install MSGReader is via NuGet.</p>
+
+<p>In Visual Studio's Package Manager Console, simply enter the following command:</p>
+
+<pre><code>Install-Package MSGReader
+</code></pre>
+
+<h1>
+<a id="side-note" class="anchor" href="#side-note" aria-hidden="true"><span class="octicon octicon-link"></span></a>Side note</h1>
+
+<p>This project can also be used from a COM based language like VB script or VB6.
+To use it first compile the code and register the com visible assembly with the command:</p>
+
+<p>Regasm.exe /codebase MsgReader.dll</p>
+
+<p>After that you can call it like this:</p>
+
+<p>dim msgreader</p>
+
+<p>set msgreader = createobject("MsgReader.Reader")</p>
+
+<p>msgreader.ExtractToFolderFromCom "the msg file to read", "the folder where to place the extracted files"</p>
+
+<h1>
+<a id="license" class="anchor" href="#license" aria-hidden="true"><span class="octicon octicon-link"></span></a>License</h1>
+
+<p>Copyright 2013-2015 Kees van Spelde.</p>
+
+<p>Licensed under the The Code Project Open License (CPOL) 1.02; you may not use this software except in compliance with the License. You may obtain a copy of the License at:</p>
+
+<p><a href="http://www.codeproject.com/info/cpol10.aspx">http://www.codeproject.com/info/cpol10.aspx</a></p>
+
+<p>Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.</p>
+
+<h1>
+<a id="core-team" class="anchor" href="#core-team" aria-hidden="true"><span class="octicon octicon-link"></span></a>Core Team</h1>
+
+<pre><code>Sicos1977 (Kees van Spelde)
+</code></pre>
+
+<h1>
+<a id="support" class="anchor" href="#support" aria-hidden="true"><span class="octicon octicon-link"></span></a>Support</h1>
+
+<p>If you like my work then please consider a donation as a thank you.</p>
+
+<p><a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&amp;hosted_button_id=NS92EXB2RDPYA" target="_blank"><img src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif"></a></p>
+        </section>
+
+        <aside id="sidebar">
+          <a href="https://github.com/Sicos1977/MSGReader/zipball/master" class="button">
+            <small>Download</small>
+            .zip file
+          </a>
+          <a href="https://github.com/Sicos1977/MSGReader/tarball/master" class="button">
+            <small>Download</small>
+            .tar.gz file
+          </a>
+
+          <p class="repo-owner"><a href="https://github.com/Sicos1977/MSGReader"></a> is maintained by <a href="https://github.com/Sicos1977">Sicos1977</a>.</p>
+
+          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
+        </aside>
+      </div>
+    </div>
+
+  
+  </body>
+</html>
