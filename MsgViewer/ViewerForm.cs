@@ -182,7 +182,6 @@ namespace MsgViewer
                 _tempFolders.Add(tempFolder);
 
                 var msgReader = new Reader();
-                var bag = msgReader.CreateMessageBag(fileName, new DirectoryInfo(tempFolder));
 
                 var files = msgReader.ExtractToFolder(fileName, tempFolder, genereateHyperlinksToolStripMenuItem.Checked);
                 var error = msgReader.GetErrorMessage();

@@ -61,6 +61,7 @@
   <ItemGroup>
     <Compile Include="Entities\AttachmentBag.cs" />
     <Compile Include="Entities\FlagBag.cs" />
+    <Compile Include="BagReader.cs" />
     <Compile Include="Entities\ReceivedByBag.cs" />
     <Compile Include="Entities\RecipientBag.cs" />
     <Compile Include="Exceptions\MRCannotRemoveAttachment.cs" />

@@ -157,60 +157,6 @@ namespace MsgReader
 
         #region ExtractToFolder
 
-        public MessageBag CreateMessageBag(string inputFile, DirectoryInfo target)
-        {
-            MessageBag result;
-            using (var stream = File.Open(inputFile, FileMode.Open, FileAccess.Read))
-            using (var message = new Storage.Message(stream))
-            {
-
-                switch (message.Type)
-                {
-                    case Storage.Message.MessageType.Email:
-                    case Storage.Message.MessageType.EmailSms:
-                    case Storage.Message.MessageType.EmailNonDeliveryReport:
-                    case Storage.Message.MessageType.EmailDeliveryReport:
-                    case Storage.Message.MessageType.EmailDelayedDeliveryReport:
-                    case Storage.Message.MessageType.EmailReadReceipt:
-                    case Storage.Message.MessageType.EmailNonReadReceipt:
-                    case Storage.Message.MessageType.EmailEncryptedAndMaybeSigned:
-                    case Storage.Message.MessageType.EmailEncryptedAndMaybeSignedNonDelivery:
-                    case Storage.Message.MessageType.EmailEncryptedAndMaybeSignedDelivery:
-                    case Storage.Message.MessageType.EmailClearSignedReadReceipt:
-                    case Storage.Message.MessageType.EmailClearSignedNonDelivery:
-                    case Storage.Message.MessageType.EmailClearSignedDelivery:
-                    case Storage.Message.MessageType.EmailBmaStub:
-                    case Storage.Message.MessageType.CiscoUnityVoiceMessage:
-                    case Storage.Message.MessageType.EmailClearSigned:
-                        var fileName = "email";
-                        bool htmlBody;
-                        string body;
-                        string dummy;
-                        List<string> attachmentList;
-                        List<string> files;
-
-                        PreProcessMsgFile(message,
-                            false,
-                            target.FullName,
-                            ref fileName,
-                            out htmlBody,
-                            out body,
-                            out dummy,
-                            out attachmentList,
-                            out files);
-                        result = MessageBag.Create(message);
-                        result.PreviewBody = body;
-                        break;
-
-                    default:
-                        result = null;
-                        break;
-                }
-            }
-
-            return result;
-        }
-
         /// <summary>
         /// This method reads the <paramref name="inputFile"/> and when the file is supported it will do the following: <br/>
         /// - Extract the HTML, RTF (will be converted to html) or TEXT body (in these order) <br/>
@@ -1545,7 +1491,7 @@ namespace MsgReader
         /// <param ref="Storage.Message.Attachment.IsContactPhoto"/> set to true, otherwise this field will always be null</param>
         /// <param name="attachments">Returns a list of names with the found attachment</param>
         /// <param name="files">Returns all the files that are generated after pre processing the <see cref="Storage.Message"/> object</param>
-        private void PreProcessMsgFile(Storage.Message message,
+        protected void PreProcessMsgFile(Storage.Message message,
             bool hyperlinks,
             string outputFolder,
             ref string fileName,
