@@ -108,7 +108,7 @@ namespace MsgReader.Outlook
                 /// Delivery report for a Secure MIME (S/MIME) encrypted and opaque-signed E-mail (REPORT.IPM.NOTE.SMIME.DR)
                 /// </summary>
                 EmailEncryptedAndMaybeSignedDelivery,
-                
+
                 /// <summary>
                 /// The message is an E-mail that is clear signed (IPM.Note.SMIME.MultipartSigned)
                 /// </summary>
@@ -193,7 +193,7 @@ namespace MsgReader.Outlook
                 /// The message is a response to tentatively accept the meeting request (IPM.Schedule.Meeting.Resp.Tent)
                 /// </summary>
                 AppointmentResponseTentative,
-                
+
                 /// <summary>
                 /// Non-delivery report for a Tentative meeting response (REPORT.IPM.SCHEDULE.MEETING.RESP.TENT.NDR)
                 /// </summary>
@@ -350,7 +350,7 @@ namespace MsgReader.Outlook
             /// Contains the subject of the <see cref="Storage.Message"/> object
             /// </summary>
             private string _subject;
-                            
+
             /// <summary>
             /// Contains the text body of the <see cref="Storage.Message"/> object
             /// </summary>
@@ -409,7 +409,7 @@ namespace MsgReader.Outlook
             /// Returns the ID of the message when the MSG file has been sent across the internet 
             /// (as specified in [RFC2822]). Null when not available
             /// </summary>
-            public string Id 
+            public string Id
             {
                 get { return GetMapiPropertyString(MapiTags.PR_INTERNET_MESSAGE_ID); }
             }
@@ -519,7 +519,7 @@ namespace MsgReader.Outlook
                         case "IPM.SCHEDULE.MEETING.CANCELED.NDR":
                             _type = MessageType.AppointmentResponseCanceledNonDelivery;
                             break;
-                        
+
                         case "IPM.SCHEDULE.MEETING.RESPONSE":
                             _type = MessageType.AppointmentResponse;
                             break;
@@ -608,7 +608,7 @@ namespace MsgReader.Outlook
             /// Returns the date and time when the message was created or null
             /// when not available
             /// </summary>
-            public DateTime? CreationTime 
+            public DateTime? CreationTime
             {
                 get { return _creationTime ?? (_creationTime = GetMapiPropertyDateTime(MapiTags.PR_CREATION_TIME)); }
             }
@@ -630,13 +630,13 @@ namespace MsgReader.Outlook
             /// Returns the date and time when the message was last modified or null
             /// when not available
             /// </summary>
-            public DateTime? LastModificationTime 
+            public DateTime? LastModificationTime
             {
                 get
                 {
                     return _lastModificationTime ??
                            (_lastModificationTime = GetMapiPropertyDateTime(MapiTags.PR_LAST_MODIFICATION_TIME));
-                } 
+                }
             }
 
             /// <summary>
@@ -650,7 +650,7 @@ namespace MsgReader.Outlook
             /// </summary>
             // ReSharper disable once CSharpWarnings::CS0109
             public new SenderRepresenting SenderRepresenting { get; private set; }
-            
+
             /// <summary>
             /// Returns the list of recipients in the message object
             /// </summary>
@@ -1043,29 +1043,30 @@ namespace MsgReader.Outlook
                     if (_bodyHtml != null)
                         return _bodyHtml;
 
-                    // Get value for the HTML MAPI property
-                    var htmlObject = GetMapiProperty(MapiTags.PR_BODY_HTML);
                     string html = null;
-                    
-                    if (htmlObject is string)
-                        html = htmlObject as string;
-                    else if (htmlObject is byte[])
+
+                    // Check if we have HTML embedded into rtf
+                    var bodyRtf = BodyRtf;
+                    if (bodyRtf != null)
                     {
-                        var htmlByteArray = htmlObject as byte[];
-                        html = InternetCodePage.GetString(htmlByteArray);
+                        var rtfDomDocument = new Rtf.DomDocument();
+                        rtfDomDocument.LoadRtfText(bodyRtf);
+                        if (!string.IsNullOrEmpty(rtfDomDocument.HtmlContent))
+                            html = rtfDomDocument.HtmlContent.Trim('\r', '\n');
                     }
 
                     // When there is no HTML found
                     if (html == null)
                     {
-                        // Check if we have HTML embedded into rtf
-                        var bodyRtf = BodyRtf;
-                        if (bodyRtf != null)
+                        // Get value for the HTML MAPI property
+                        var htmlObject = GetMapiProperty(MapiTags.PR_BODY_HTML);
+
+                        if (htmlObject is string)
+                            html = htmlObject as string;
+                        else if (htmlObject is byte[])
                         {
-                            var rtfDomDocument = new Rtf.DomDocument();
-                            rtfDomDocument.LoadRtfText(bodyRtf);
-                            if (!string.IsNullOrEmpty(rtfDomDocument.HtmlContent))
-                                html = rtfDomDocument.HtmlContent.Trim('\r', '\n');
+                            var htmlByteArray = htmlObject as byte[];
+                            html = InternetCodePage.GetString(htmlByteArray);
                         }
                     }
 
@@ -1149,7 +1150,7 @@ namespace MsgReader.Outlook
                         return _receivedBy;
 
                     _receivedBy = new ReceivedBy(
-                        GetMapiPropertyString(MapiTags.PR_RECEIVED_BY_ADDRTYPE), 
+                        GetMapiPropertyString(MapiTags.PR_RECEIVED_BY_ADDRTYPE),
                         GetMapiPropertyString(MapiTags.PR_RECEIVED_BY_EMAIL_ADDRESS),
                         GetMapiPropertyString(MapiTags.PR_RECEIVED_BY_NAME));
                     return _receivedBy;
@@ -1217,7 +1218,7 @@ namespace MsgReader.Outlook
                     // Run specific load method depending on sub storage name prefix
                     if (storageStatistic.pwcsName.StartsWith(MapiTags.RecipStoragePrefix))
                     {
-                        var recipient = new Recipient(new Storage(subStorage)); 
+                        var recipient = new Recipient(new Storage(subStorage));
                         _recipients.Add(recipient);
                     }
                     else if (storageStatistic.pwcsName.StartsWith(MapiTags.AttachStoragePrefix))
@@ -1404,7 +1405,7 @@ namespace MsgReader.Outlook
                         _bodyText = eml.TextBody.GetBodyAsText();
 
                     if (eml.HtmlBody != null)
-                    _bodyHtml = eml.HtmlBody.GetBodyAsText();
+                        _bodyHtml = eml.HtmlBody.GetBodyAsText();
 
                     foreach (var emlAttachment in eml.Attachments)
                     {
@@ -1428,7 +1429,7 @@ namespace MsgReader.Outlook
             {
                 // Create attachment from attachment storage
                 var attachment = new Attachment(new Storage(storage), storageName);
-                
+
                 var attachMethod = attachment.GetMapiPropertyInt32(MapiTags.PR_ATTACH_METHOD);
                 switch (attachMethod)
                 {
@@ -1499,7 +1500,7 @@ namespace MsgReader.Outlook
                 }
             }
             #endregion
-            
+
             #region Save
             /// <summary>
             /// Saves this <see cref="Storage.Message" /> to the specified <paramref name="fileName"/>
@@ -1695,7 +1696,7 @@ namespace MsgReader.Outlook
                     SenderRepresenting = new SenderRepresenting(email, displayName);
             }
             #endregion
-            
+
             #region GetEmailSender
             /// <summary>
             /// Returns the E-mail sender address in RFC822 format, e.g. 

@@ -396,8 +396,7 @@ namespace MsgReader.Outlook
                     return null;
 
                 case MapiTags.PT_STRING8:
-                    return GetStreamAsString(containerName, Encoding.UTF8);
-                //return GetStreamAsString(containerName, Encoding.Default);
+                    return GetStreamAsString(containerName, Encoding.Default);
 
                 case MapiTags.PT_UNICODE:
                     return GetStreamAsString(containerName, Encoding.Unicode);
